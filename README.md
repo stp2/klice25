@@ -1,0 +1,1 @@
+Aplikace pro organizování šifrovací hry 13 klíčů.
