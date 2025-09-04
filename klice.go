@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -125,6 +126,37 @@ func teamInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func qrHandler(w http.ResponseWriter, r *http.Request) {
+	uid, found := strings.CutPrefix(r.URL.Path, "/qr/")
+	if !found || uid == "" {
+		http.Error(w, "Invalid QR code", http.StatusBadRequest)
+		return
+	}
+	var positionID int
+	err := db.QueryRow("SELECT position_id FROM qr_codes WHERE uid = ?", uid).Scan(&positionID)
+	if err == sql.ErrNoRows {
+		http.Error(w, "QR code not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, "Could not retrieve position", http.StatusInternalServerError)
+		return
+	}
+	if loggedIn, teamID := isLoggedIn(w, r); loggedIn {
+		var cipherID int
+		var assignment string
+		err = db.QueryRow("select id, assignment from CIPHERS where id = (select cipher_id from TASKS where position_id = ? and difficulty_level = (select difficulty_level from teams where id = ?))", positionID, teamID).Scan(&cipherID, &assignment)
+		if err == sql.ErrNoRows {
+			http.Error(w, "No cipher found", http.StatusNotFound)
+			return
+		} else if err != nil {
+			http.Error(w, "Could not retrieve cipher", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintf(w, "QR Code: %s, Position ID: %d, Cipher ID: %d, Assignment: %s", uid, positionID, cipherID, assignment)
+	}
+}
+
 func main() {
 	var err error
 	db, err = sql.Open("sqlite3", "./klice.db?_fk=on")
@@ -137,6 +169,7 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
 	http.HandleFunc("/team", teamInfoHandler)
+	http.HandleFunc("/qr/", qrHandler)
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
