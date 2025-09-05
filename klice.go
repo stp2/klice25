@@ -165,6 +165,7 @@ func main() {
 		return
 	}
 	defer db.Close()
+	db.SetMaxOpenConns(1)
 
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
