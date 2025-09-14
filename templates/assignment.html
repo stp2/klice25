@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <title>Zadání šifry {{.Order}}</title>
+</head>
+
+<body>
+    <h1>Zadání šifry {{.Order}}</h1>
+    <p>{{.Assignment}}</p>
+    <hr>
+    {{if eq .HelpText ""}}
+    <p>Požádat o malou nápovědu.</p>
+    <form method="post">
+        <input type="hidden" name="help" value="1">
+        <input type="submit" value="Zobrazit nápovědu">
+    </form>
+    {{else if eq .Coordinates ""}}
+    <p>Nápověda: {{.HelpText}}</p>
+    <p>Vzdát se a ukázat pozici další šifry.</p>
+    <form method="post">
+        <input type="hidden" name="help" value="2">
+        <input type="submit" value="Vzdát se">
+    </form>
+    {{else}}
+    <p>Řešení: {{.Solution}}</p>
+    {{end}}
+    <hr>
+    {{if eq .Coordinates ""}}
+    <form method="post">
+        Řešení: <input type="text" name="assignment"><br>
+        <input type="submit" value="Odeslat">
+    </form>
+    {{else}}
+    <p>Souřadnice další šifry: {{.Coordinates}}</p>
+    <p>Nápověda k nalezení cíle: {{.FinalClue}}</p>
+    {{end}}
+</body>
+
+</html>

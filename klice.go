@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 	"os"
@@ -58,7 +59,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/team", http.StatusSeeOther)
 		}
 	} else if r.Method == http.MethodGet {
-		loginPage, err := os.Open("login.html")
+		loginPage, err := os.Open("templates/login.html")
 		if err != nil {
 			http.Error(w, "Could not open login page", http.StatusInternalServerError)
 			return
@@ -153,7 +154,19 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprintf(w, "QR Code: %s, Position ID: %d, Cipher ID: %d, Assignment: %s", uid, positionID, cipherID, assignment)
+		CipherTemplateData := CipherTemplateS{
+			Order:       uint(cipherID),
+			Assignment:  template.HTML(assignment),
+			HelpText:    "",
+			FinalClue:   "",
+			Coordinates: "",
+			Solution:    "",
+		}
+		err = CipherTemplate.Execute(w, CipherTemplateData)
+		if err != nil {
+			http.Error(w, "Could not render template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
