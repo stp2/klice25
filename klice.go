@@ -117,13 +117,13 @@ func isLoggedIn(w http.ResponseWriter, r *http.Request) (bool, int) {
 
 func teamInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if loggedIn, teamID := isLoggedIn(w, r); loggedIn {
-		var teamName, city string
-		err := db.QueryRow("SELECT name, city FROM teams WHERE id = ?", teamID).Scan(&teamName, &city)
+		var teamName, city, last_cipher, penalty string
+		err := db.QueryRow("SELECT name, city, last_cipher, penalty FROM teams WHERE id = ?", teamID).Scan(&teamName, &city, &last_cipher, &penalty)
 		if err != nil {
 			http.Error(w, "Could not retrieve team information", http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, "Team Name: %s, City: %s", teamName, city)
+		fmt.Fprintf(w, "Team Name: %s, City: %s, Last Cipher: %s, Penalty: %s", teamName, city, last_cipher, penalty)
 	}
 }
 
@@ -143,9 +143,54 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if loggedIn, teamID := isLoggedIn(w, r); loggedIn {
-		var cipherID int
 		var assignment string
-		err = db.QueryRow("select id, assignment from CIPHERS where id = (select cipher_id from TASKS where position_id = ? and difficulty_level = (select difficulty_level from teams where id = ?))", positionID, teamID).Scan(&cipherID, &assignment)
+		var cipherID int
+		var taskID int
+		var order int
+		var last_cipher int
+		var help int = 0
+		var penalty int = 0
+
+		// Find task for this position and team's difficulty level
+		err = db.QueryRow("SELECT id FROM TASKS WHERE position_id = ? AND difficulty_level = (SELECT difficulty_level FROM teams WHERE id = ?)", positionID, teamID).Scan(&taskID)
+		if err == sql.ErrNoRows {
+			http.Error(w, "No task found for this position and team", http.StatusNotFound)
+			return
+		} else if err != nil {
+			http.Error(w, "Could not retrieve task", http.StatusInternalServerError)
+			return
+		}
+		// get task order
+		err = db.QueryRow("SELECT order_num FROM TASKS WHERE id = ?", taskID).Scan(&order)
+		if err != nil {
+			http.Error(w, "Could not retrieve task order", http.StatusInternalServerError)
+			return
+		}
+		// get last cipher visited by team
+		err = db.QueryRow("SELECT last_cipher FROM teams WHERE id = ?", teamID).Scan(&last_cipher)
+		if err != nil {
+			http.Error(w, "Could not retrieve last cipher", http.StatusInternalServerError)
+			return
+		}
+		// check if the task is available for the team
+		// if order > last_cipher + 1, task is not yet available
+		// if order == last_cipher + 1, task is now available, update last_cipher
+		// if order <= last_cipher, task has been already visited, allow viewing
+		if order > last_cipher+1 {
+			http.Error(w, "This task is not yet available", http.StatusForbidden)
+			return
+		} else if order == last_cipher+1 {
+			last_cipher = order
+			_, err = db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order, teamID)
+			if err != nil {
+				http.Error(w, "Could not update last cipher", http.StatusInternalServerError)
+				return
+			}
+		} else if order < last_cipher {
+			help = 2
+		}
+		// get cipher assignment
+		err = db.QueryRow("SELECT id, assignment FROM CIPHERS WHERE id = (SELECT cipher_id FROM TASKS WHERE id = ?)", taskID).Scan(&cipherID, &assignment)
 		if err == sql.ErrNoRows {
 			http.Error(w, "No cipher found", http.StatusNotFound)
 			return
@@ -162,6 +207,85 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			Coordinates: "",
 			Solution:    "",
 		}
+
+		// get penalties for this task and team
+		err = db.QueryRow("SELECT minutes FROM penalties WHERE team_id = ? AND task_id = ?", teamID, taskID).Scan(&penalty)
+		if err == sql.ErrNoRows {
+			penalty = 0
+		} else if err != nil {
+			http.Error(w, "Could not retrieve penalties", http.StatusInternalServerError)
+			return
+		}
+		// determine help level based on penalties
+		if penalty > 0 && penalty < 15 {
+			help = 1
+		} else if penalty >= 15 {
+			help = 2
+		}
+
+		// handle answer and help form submission
+		if r.Method == http.MethodPost {
+			if err := r.ParseForm(); err != nil {
+				http.Error(w, "Could not parse form", http.StatusBadRequest)
+				return
+			}
+			if r.FormValue("help") == "1" && help == 0 { // small help
+				help = 1
+				db.Exec("INSERT INTO penalties (team_id, task_id, minutes) VALUES (?, ?, 5)", teamID, taskID)
+				db.Exec("UPDATE teams SET penalty = penalty + 5 WHERE id = ?", teamID)
+			} else if r.FormValue("help") == "2" && help == 1 { // give up
+				help = 2
+				db.Exec("UPDATE penalties SET minutes = 30 WHERE team_id = ? AND task_id = ?", teamID, taskID)
+				db.Exec("UPDATE teams SET penalty = penalty + 30 WHERE id = ?", teamID)
+				db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order+1, teamID)
+			}
+		}
+
+		// find which clues to show
+		if help == 1 { // small help
+			var helpText string
+			err = db.QueryRow("SELECT clue FROM CIPHERS WHERE id = ?", cipherID).Scan(&helpText)
+			if err == sql.ErrNoRows {
+				helpText = ""
+			} else if err != nil {
+				http.Error(w, "Could not retrieve help text", http.StatusInternalServerError)
+				return
+			}
+			CipherTemplateData.HelpText = helpText
+		} else if help == 2 { // next cipher
+			// get end clue
+			var endClue string
+			err = db.QueryRow("SELECT end_clue FROM TASKS WHERE id = ?", taskID).Scan(&endClue)
+			if err == sql.ErrNoRows {
+				endClue = ""
+			} else if err != nil {
+				http.Error(w, "Could not retrieve end clue", http.StatusInternalServerError)
+				return
+			}
+			CipherTemplateData.FinalClue = endClue
+			// get coordinates
+			var coordinates string
+			err = db.QueryRow("SELECT gps FROM POSITIONS WHERE id = (SELECT position_id FROM TASKS WHERE id = (SELECT id FROM TASKS WHERE order_num = ? AND difficulty_level = (SELECT difficulty_level FROM teams WHERE id = ?)))", order+1, teamID).Scan(&coordinates)
+			if err == sql.ErrNoRows {
+				coordinates = ""
+			} else if err != nil {
+				http.Error(w, "Could not retrieve coordinates", http.StatusInternalServerError)
+				return
+			}
+			CipherTemplateData.Coordinates = coordinates
+			// get solution
+			var solution string
+			err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&solution)
+			if err == sql.ErrNoRows {
+				solution = ""
+			} else if err != nil {
+				http.Error(w, "Could not retrieve solution", http.StatusInternalServerError)
+				return
+			}
+			CipherTemplateData.Solution = solution
+		}
+
+		CipherTemplateData.Help = help
 		err = CipherTemplate.Execute(w, CipherTemplateData)
 		if err != nil {
 			http.Error(w, "Could not render template", http.StatusInternalServerError)

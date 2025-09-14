@@ -9,13 +9,13 @@
     <h1>Zadání šifry {{.Order}}</h1>
     <p>{{.Assignment}}</p>
     <hr>
-    {{if eq .HelpText ""}}
+    {{if eq .Help 0}}
     <p>Požádat o malou nápovědu.</p>
     <form method="post">
         <input type="hidden" name="help" value="1">
         <input type="submit" value="Zobrazit nápovědu">
     </form>
-    {{else if eq .Coordinates ""}}
+    {{else if eq .Help 1}}
     <p>Nápověda: {{.HelpText}}</p>
     <p>Vzdát se a ukázat pozici další šifry.</p>
     <form method="post">
@@ -26,7 +26,7 @@
     <p>Řešení: {{.Solution}}</p>
     {{end}}
     <hr>
-    {{if eq .Coordinates ""}}
+    {{if ne .Help 2}}
     <form method="post">
         Řešení: <input type="text" name="assignment"><br>
         <input type="submit" value="Odeslat">

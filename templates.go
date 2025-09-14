@@ -11,6 +11,7 @@ type CipherTemplateS struct {
 	FinalClue   string
 	Coordinates string
 	Solution    string
+	Help        int
 }
 
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
