@@ -117,13 +117,35 @@ func isLoggedIn(w http.ResponseWriter, r *http.Request) (bool, int) {
 
 func teamInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if loggedIn, teamID := isLoggedIn(w, r); loggedIn {
-		var teamName, city, last_cipher, penalty string
-		err := db.QueryRow("SELECT name, city, last_cipher, penalty FROM teams WHERE id = ?", teamID).Scan(&teamName, &city, &last_cipher, &penalty)
+		var teamName string
+		var difficultyLevelID int
+		var difficultyLevel string
+		var lastCipher int
+		var penalty int
+
+		err := db.QueryRow("SELECT name, difficulty_level, last_cipher, penalty FROM teams WHERE id = ?", teamID).Scan(&teamName, &difficultyLevelID, &lastCipher, &penalty)
 		if err != nil {
-			http.Error(w, "Could not retrieve team information", http.StatusInternalServerError)
+			http.Error(w, "Could not retrieve team info", http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, "Team Name: %s, City: %s, Last Cipher: %s, Penalty: %s", teamName, city, last_cipher, penalty)
+		err = db.QueryRow("SELECT level_name FROM difficulty_levels WHERE id = ?", difficultyLevelID).Scan(&difficultyLevel)
+		if err != nil {
+			http.Error(w, "Could not retrieve difficulty level", http.StatusInternalServerError)
+			return
+		}
+
+		TeamTemplateData := TeamTemplateS{
+			TeamName:   teamName,
+			Difficulty: difficultyLevel,
+			LastCipher: lastCipher,
+			Penalties:  penalty,
+		}
+
+		err = TeamTemplate.Execute(w, TeamTemplateData)
+		if err != nil {
+			http.Error(w, "Could not render template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

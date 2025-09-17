@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tým: {{.TeamName}}</title>
+</head>
+
+<body>
+    <h1>Tým: {{.TeamName}}</h1>
+    Obtížnost: {{.Difficulty}}<br>
+    Poslední šifra : {{.LastCipher}}<br>
+    Penalizace: {{.Penalties}}<br>
+    <hr>
+    <form action="/logout" method="get">
+        <input type="submit" value="Odhlásit">
+    </form>
+</body>
+
+</html>

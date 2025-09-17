@@ -15,4 +15,12 @@ type CipherTemplateS struct {
 	Wrong       bool
 }
 
+type TeamTemplateS struct {
+	TeamName   string
+	Difficulty string
+	LastCipher int
+	Penalties  int
+}
+
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
+var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
