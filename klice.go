@@ -341,10 +341,15 @@ func main() {
 	defer db.Close()
 	db.SetMaxOpenConns(1)
 
+	// klice app
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
 	http.HandleFunc("/team", teamInfoHandler)
 	http.HandleFunc("/qr/", qrHandler)
+	// admin app
+	http.HandleFunc("/admin/login", adminLoginHandler)
+	http.HandleFunc("/admin/logout", adminLogoutHandler)
+	http.HandleFunc("/admin/", adminHandler)
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
