@@ -12,6 +12,7 @@ type CipherTemplateS struct {
 	Coordinates string
 	Solution    string
 	Help        int
+	Wrong       bool
 }
 
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))

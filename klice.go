@@ -206,6 +206,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			FinalClue:   "",
 			Coordinates: "",
 			Solution:    "",
+			Wrong:       false,
 		}
 
 		// get penalties for this task and team
@@ -238,6 +239,20 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 				db.Exec("UPDATE penalties SET minutes = 30 WHERE team_id = ? AND task_id = ?", teamID, taskID)
 				db.Exec("UPDATE teams SET penalty = penalty + 30 WHERE id = ?", teamID)
 				db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order+1, teamID)
+			} else if answer := r.FormValue("solution"); answer != "" { // answer submission
+				var correctAnswer string
+				err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&correctAnswer)
+				if err != nil {
+					http.Error(w, "Could not retrieve solution", http.StatusInternalServerError)
+					return
+				}
+				if strings.EqualFold(strings.TrimSpace(answer), strings.TrimSpace(correctAnswer)) {
+					// correct answer, move to next task
+					db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order+1, teamID)
+					help = 2
+				} else {
+					CipherTemplateData.Wrong = true
+				}
 			}
 		}
 
