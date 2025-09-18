@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+</head>
+
+<body>
+    <h1>Týmy</h1>
+    <table border="1">
+        <tr>
+            <th>Název týmu</th>
+            <th>Obtížnost</th>
+            <th>Poslední šifra</th>
+            <th>Penalizace (minuty)</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.TeamName}}</td>
+            <td>{{.Difficulty}}</td>
+            <td>{{.LastCipher}}</td>
+            <td>{{.Penalties}}</td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <p>Vynulování penalizací a posledních šifer.</p>
+    <a href="/admin/start">Start Závodu</a>
+    <hr>
+    <a href="/admin">Zpět na admin panel</a>
+</body>
+
+</html>

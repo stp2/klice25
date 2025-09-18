@@ -24,3 +24,4 @@ type TeamTemplateS struct {
 
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
+var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))

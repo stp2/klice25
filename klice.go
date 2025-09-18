@@ -6,9 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"html/template"
-	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -58,14 +56,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case http.MethodGet:
-		loginPage, err := os.Open("templates/login.html")
-		if err != nil {
-			http.Error(w, "Could not open login page", http.StatusInternalServerError)
-			return
-		}
-		defer loginPage.Close()
-
-		io.Copy(w, loginPage)
+		http.ServeFile(w, r, "templates/login.html")
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -345,6 +336,8 @@ func main() {
 	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin/logout", adminLogoutHandler)
 	http.HandleFunc("/admin/", adminHandler)
+	http.HandleFunc("/admin/teams", adminTeamsHandler)
+	http.HandleFunc("/admin/start", AdminStartHandler)
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
