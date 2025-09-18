@@ -52,7 +52,7 @@ func adminLogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 }
 
-func isAdmin(w http.ResponseWriter, r *http.Request) bool {
+func isAdmin(r *http.Request) bool {
 	cookie, err := r.Cookie("admin_session")
 	if err != nil {
 		return false
@@ -77,14 +77,14 @@ func isAdmin(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
-	if !isAdmin(w, r) {
+	if !isAdmin(r) {
 		return
 	}
 	http.ServeFile(w, r, "templates/adminPanel.html")
 }
 
 func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
-	if !isAdmin(w, r) {
+	if !isAdmin(r) {
 		return
 	}
 	rows, err := db.Query("SELECT name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY teams.difficulty_level, teams.name")
@@ -113,7 +113,7 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminStartHandler(w http.ResponseWriter, r *http.Request) {
-	if !isAdmin(w, r) {
+	if !isAdmin(r) {
 		return
 	}
 	_, err := db.Exec("UPDATE teams SET last_cipher = 1, penalty = 0")
@@ -130,7 +130,7 @@ func AdminStartHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
-	if !isAdmin(w, r) {
+	if !isAdmin(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
