@@ -7,6 +7,11 @@ import (
 	"regexp"
 )
 
+type difficultyLevel struct {
+	ID        int
+	LevelName string
+}
+
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -68,13 +73,11 @@ func isAdmin(w http.ResponseWriter, r *http.Request) bool {
 	if err != sql.ErrNoRows && err == nil {
 		return true
 	}
-	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 	return false
 }
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 	if !isAdmin(w, r) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	http.ServeFile(w, r, "templates/adminPanel.html")
@@ -82,10 +85,9 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 	if !isAdmin(w, r) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	rows, err := db.Query("SELECT name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY name")
+	rows, err := db.Query("SELECT name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY teams.difficulty_level, teams.name")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -112,7 +114,6 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 
 func AdminStartHandler(w http.ResponseWriter, r *http.Request) {
 	if !isAdmin(w, r) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	_, err := db.Exec("UPDATE teams SET last_cipher = 1, penalty = 0")
@@ -126,4 +127,56 @@ func AdminStartHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/admin/", http.StatusSeeOther)
+}
+
+func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(w, r) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	// Fetch all difficulty levels
+	rows, err := db.Query("SELECT id, level_name FROM difficulty_levels ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var difficultyLevels []difficultyLevel
+	for rows.Next() {
+		var level difficultyLevel
+		if err := rows.Scan(&level.ID, &level.LevelName); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		difficultyLevels = append(difficultyLevels, level)
+	}
+	// For each difficulty level, fetch the corresponding tasks and their details
+	var routes []AdminRoutesTemplateS
+	for _, level := range difficultyLevels {
+		var route AdminRoutesTemplateS
+		rows, err := db.Query("SELECT tasks.order_num, CIPHERS.assignment, CIPHERS.clue, tasks.end_clue, POSITIONS.gps, POSITIONS.clue, CIPHERS.solution FROM TASKS JOIN CIPHERS ON TASKS.cipher_id = ciphers.id JOIN POSITIONS on TASKS.position_id = POSITIONS.id WHERE TASKS.difficulty_level=? ORDER BY TASKS.order_num;", level.ID)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		route.Name = level.LevelName
+		for rows.Next() {
+			var cipher CipherTemplateS
+			if err := rows.Scan(&cipher.Order, &cipher.Assignment, &cipher.HelpText, &cipher.FinalClue, &cipher.Coordinates, &cipher.PositionHint, &cipher.Solution); err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			route.Ciphers = append(route.Ciphers, cipher)
+		}
+		if err := rows.Err(); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		routes = append(routes, route)
+	}
+	if err := AdminRoutesTemplate.Execute(w, routes); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
 }

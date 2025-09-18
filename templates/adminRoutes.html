@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Trasy</title>
+</head>
+
+<body>
+    <h1>Trasy</h1>
+    {{range .}}
+    <h2>{{.Name}}</h2>
+    <table border="1">
+        <tr>
+            <th>Pořadí</th>
+            <th>Souřadnice</th>
+            <th>Nápověda pozice</th>
+            <th>Zadání</th>
+            <th>Nápověda</th>
+            <th>Řešení</th>
+            <th>Cílová indicie</th>
+        </tr>
+        {{range .Ciphers}}
+        <tr>
+            <td>{{.Order}}</td>
+            <td>{{.Coordinates}}</td>
+            <td>{{.PositionHint}}</td>
+            <td>{{.Assignment}}</td>
+            <td>{{.HelpText}}</td>
+            <td>{{.Solution}}</td>
+            <td>{{.FinalClue}}</td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    {{end}}
+</body>
+
+</html>
