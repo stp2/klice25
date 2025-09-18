@@ -43,7 +43,7 @@ CREATE TABLE TASKS (
     cipher_id INTEGER NOT NULL,
     position_id INTEGER NOT NULL,
     difficulty_level INTEGER NOT NULL,
-    order_num INTEGER NOT NULL,
+    order_num INTEGER UNIQUE NOT NULL,
     end_clue TEXT NOT NULL,
     FOREIGN KEY (cipher_id) REFERENCES CIPHERS(id),
     FOREIGN KEY (position_id) REFERENCES POSITIONS(id),
