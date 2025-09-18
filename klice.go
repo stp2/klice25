@@ -22,43 +22,42 @@ func hashPassword(password string) string {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		// Handle login logic here
+	switch r.Method {
+	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Could not parse form", http.StatusBadRequest)
 			return
 		}
 		password := r.FormValue("password")
 		hashedPassword := hashPassword(password)
-		var teamID int
 
-		err := db.QueryRow("SELECT id FROM teams WHERE password = ?", hashedPassword).Scan(&teamID)
-		if err == sql.ErrNoRows {
+		err := db.QueryRow("SELECT 1 FROM teams WHERE password = ?", hashedPassword).Scan(new(int))
+		switch {
+		case err == sql.ErrNoRows:
 			http.Error(w, "No team found", http.StatusUnauthorized)
 			return
-		} else if err != nil {
+		case err != nil:
 			http.Error(w, "Could not retrieve team", http.StatusInternalServerError)
 			return
-		}
+		default:
+			sessionID := hashedPassword
+			cookie := &http.Cookie{
+				Name:  "session_id",
+				Value: sessionID,
+				Path:  "/",
+			}
+			http.SetCookie(w, cookie)
 
-		var sessionID string
-		sessionID = hashedPassword
-		cookie := &http.Cookie{
-			Name:  "session_id",
-			Value: sessionID,
-			Path:  "/",
+			redir, err := r.Cookie("url")
+			if err == nil {
+				redir.MaxAge = -1
+				http.SetCookie(w, redir)
+				http.Redirect(w, r, redir.Value, http.StatusSeeOther)
+			} else {
+				http.Redirect(w, r, "/team", http.StatusSeeOther)
+			}
 		}
-		http.SetCookie(w, cookie)
-
-		redir, err := r.Cookie("url")
-		if err == nil {
-			redir.MaxAge = -1
-			http.SetCookie(w, redir)
-			http.Redirect(w, r, redir.Value, http.StatusSeeOther)
-		} else {
-			http.Redirect(w, r, "/team", http.StatusSeeOther)
-		}
-	} else if r.Method == http.MethodGet {
+	case http.MethodGet:
 		loginPage, err := os.Open("templates/login.html")
 		if err != nil {
 			http.Error(w, "Could not open login page", http.StatusInternalServerError)
@@ -67,6 +66,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		defer loginPage.Close()
 
 		io.Copy(w, loginPage)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -118,19 +119,13 @@ func isLoggedIn(w http.ResponseWriter, r *http.Request) (bool, int) {
 func teamInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if loggedIn, teamID := isLoggedIn(w, r); loggedIn {
 		var teamName string
-		var difficultyLevelID int
 		var difficultyLevel string
 		var lastCipher int
 		var penalty int
 
-		err := db.QueryRow("SELECT name, difficulty_level, last_cipher, penalty FROM teams WHERE id = ?", teamID).Scan(&teamName, &difficultyLevelID, &lastCipher, &penalty)
+		err := db.QueryRow("SELECT name, level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id WHERE teams.id = ?", teamID).Scan(&teamName, &difficultyLevel, &lastCipher, &penalty)
 		if err != nil {
 			http.Error(w, "Could not retrieve team info", http.StatusInternalServerError)
-			return
-		}
-		err = db.QueryRow("SELECT level_name FROM difficulty_levels WHERE id = ?", difficultyLevelID).Scan(&difficultyLevel)
-		if err != nil {
-			http.Error(w, "Could not retrieve difficulty level", http.StatusInternalServerError)
 			return
 		}
 
@@ -259,8 +254,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			} else if r.FormValue("help") == "2" && help == 1 { // give up
 				help = 2
 				db.Exec("UPDATE penalties SET minutes = 30 WHERE team_id = ? AND task_id = ?", teamID, taskID)
-				db.Exec("UPDATE teams SET penalty = penalty + 30 WHERE id = ?", teamID)
-				db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order+1, teamID)
+				db.Exec("UPDATE teams SET penalty = penalty + 30, last_cipher = ? WHERE id = ?", order+1, teamID)
 			} else if answer := r.FormValue("solution"); answer != "" { // answer submission
 				var correctAnswer string
 				err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&correctAnswer)
@@ -279,7 +273,8 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// find which clues to show
-		if help == 1 { // small help
+		switch help {
+		case 1: // small help
 			var helpText string
 			err = db.QueryRow("SELECT clue FROM CIPHERS WHERE id = ?", cipherID).Scan(&helpText)
 			if err == sql.ErrNoRows {
@@ -289,7 +284,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			CipherTemplateData.HelpText = helpText
-		} else if help == 2 { // next cipher
+		case 2: // next cipher
 			// get end clue
 			var endClue string
 			err = db.QueryRow("SELECT end_clue FROM TASKS WHERE id = ?", taskID).Scan(&endClue)

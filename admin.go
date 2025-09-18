@@ -8,32 +8,37 @@ import (
 )
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
+	switch r.Method {
+	case http.MethodGet:
 		http.ServeFile(w, r, "templates/adminLogin.html")
-		return
-	} else if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
+	case http.MethodPost:
+		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Error parsing form", http.StatusBadRequest)
 			return
 		}
 		username := r.FormValue("username")
 		password := r.FormValue("password")
-		err = db.QueryRow("SELECT 1 FROM admins WHERE username=? AND PASSWORD=?", username, hashPassword(password)).Scan(new(int))
-		if err == sql.ErrNoRows {
+		err := db.QueryRow(
+			"SELECT 1 FROM admins WHERE username=? AND PASSWORD=?",
+			username, hashPassword(password),
+		).Scan(new(int))
+		switch {
+		case err == sql.ErrNoRows:
 			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-			return
-		} else if err != nil {
+		case err != nil:
 			http.Error(w, "Database error", http.StatusInternalServerError)
-			return
+		default:
+			http.SetCookie(w, &http.Cookie{
+				Name:     "admin_session",
+				Value:    base64.StdEncoding.EncodeToString([]byte(username + ":" + hashPassword(password))),
+				Path:     "/admin/",
+				HttpOnly: true,
+				MaxAge:   3600,
+			})
+			http.Redirect(w, r, "/admin/", http.StatusSeeOther)
 		}
-		http.SetCookie(w, &http.Cookie{Name: "admin_session",
-			Value:    base64.StdEncoding.EncodeToString([]byte(username + ":" + hashPassword(password))),
-			Path:     "/admin/",
-			HttpOnly: true,
-			MaxAge:   3600})
-		http.Redirect(w, r, "/admin/", http.StatusSeeOther)
-		return
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
