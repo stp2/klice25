@@ -31,11 +31,11 @@ INSERT INTO CIPHERS (id, assignment, solution, clue) VALUES
 
 -- Vložení úkolů
 INSERT INTO TASKS (id, cipher_id, position_id, difficulty_level, order_num, end_clue) VALUES
-    (1, 1, 1, 1, 10, 'Pokračuj k dalšímu stanovišti.'),
-    (2, 2, 2, 2, 20, 'Hledej QR kód u stromu.'),
-    (3, 3, 3, 3, 30, 'Gratulujeme, jsi v cíli!'),
-    (4, 1, 4, 1, 11, 'To je vše, děkujeme za účast!');
+    (1, 1, 1, 1, 1, 'Pokračuj k dalšímu stanovišti.'),
+    (2, 2, 2, 2, 1, 'Hledej QR kód u stromu.'),
+    (3, 3, 3, 3, 1, 'Gratulujeme, jsi v cíli!'),
+    (4, 1, 4, 1, 2, 'To je vše, děkujeme za účast!');
 
--- Vložení admina: heslo
+-- Vložení admin: heslo
 INSERT INTO ADMINS (id, username, password) VALUES
     (1, 'admin', '56b1db8133d9eb398aabd376f07bf8ab5fc584ea0b8bd6a1770200cb613ca005');

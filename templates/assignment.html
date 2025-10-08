@@ -34,9 +34,22 @@
         <input type="submit" value="Odeslat">
     </form>
     {{else}}
-    <p>Souřadnice další šifry: {{.Coordinates}}</p>
+    <p>
+        Souřadnice další šifry:
+        <input id="gps" value="{{.Coordinates}}" readonly />
+        <br>
+        <button onclick="copyToClipboard()">Zkopírovat do schránky</button>
+    </p>
     <p>Nápověda k nalezení cíle: {{.FinalClue}}</p>
     {{end}}
 </body>
+
+<script>
+    function copyToClipboard() {
+        let copyText = document.querySelector("#gps");
+        copyText.select();
+        document.execCommand("copy");
+    }
+</script>
 
 </html>
