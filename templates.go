@@ -32,3 +32,4 @@ var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.htm
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
 var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))
 var AdminRoutesTemplate = template.Must(template.ParseFiles("templates/adminRoutes.html"))
+var AdminLevelTemplate = template.Must(template.ParseFiles("templates/adminLevels.html"))

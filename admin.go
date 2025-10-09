@@ -183,3 +183,63 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AdminLevelHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(r) {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing difficulty level
+		if r.PostForm.Has("delete") {
+			levelName := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM difficulty_levels WHERE level_name = ?", levelName)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/levels", http.StatusSeeOther)
+			return
+		}
+		// Adding a new difficulty level
+		levelName := r.FormValue("name")
+		if levelName == "" {
+			http.Error(w, "Level name cannot be empty", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO difficulty_levels (level_name) VALUES (?)", levelName)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/levels", http.StatusSeeOther)
+		return
+	}
+	rows, err := db.Query("SELECT level_name FROM difficulty_levels ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var difficultyLevels []string
+	for rows.Next() {
+		var level string
+		if err := rows.Scan(&level); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		difficultyLevels = append(difficultyLevels, level)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if err := AdminLevelTemplate.Execute(w, difficultyLevels); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+}

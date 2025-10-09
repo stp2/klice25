@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Úrovně obtížnosti</title>
+</head>
+
+<body>
+    <h1>Úrovně obtížnosti</h1>
+    <table border="1">
+        <tr>
+            <th>Jméno</th>
+            <th>Smazat</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.}}</td>
+            <td>
+                <form action="/admin/levels" method="post">
+                    <input type="hidden" name="delete" value="{{.}}">
+                    <button type="submit">Smazat</button>
+                </form>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <h2>Přidat novou úroveň</h2>
+    <form action="/admin/levels" method="post">
+        Jméno: <input type="text" name="name" required>
+        <button type="submit">Přidat úroveň</button>
+    </form>
+</body>
+
+</html>
