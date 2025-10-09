@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>QR</title>
+</head>
+
+<body>
+    <h1>QR</h1>
+    <table border="1">
+        <tr>
+            <th>URL</th>
+            <th>Pozice</th>
+            <th>GPS</th>
+            <th>Smazat</th>
+        </tr>
+        {{range .QRs}}
+        <tr>
+            <td>{{.URL}}</td>
+            <td>{{.Position}}</td>
+            <td>{{.GPS}}</td>
+            <td>
+                <form action="/admin/qr" method="post">
+                    <input type="hidden" name="delete" value="{{.ID}}">
+                    <button type="submit">Smazat</button>
+                </form>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <h2>Přidat nový QR kód</h2>
+    <form action="/admin/qr" method="post">
+        URL - jenom poslední část: <input type="text" name="uid" required>
+        Pozice: <select name="position" required>
+            {{range .Positions}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </select>
+        <button type="submit">Přidat QR kód</button>
+    </form>
+    <hr>
+    <a href="/admin">Zpět na admin panel</a>
+</body>
+
+</html>

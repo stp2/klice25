@@ -344,6 +344,7 @@ func main() {
 	http.HandleFunc("/admin/levels", AdminLevelHandler)
 	http.HandleFunc("/admin/cipher", AdminCipherHandler)
 	http.HandleFunc("/admin/positions", AdminPositionsHandler)
+	http.HandleFunc("/admin/qr", AdminQRHandler)
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)

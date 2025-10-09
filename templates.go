@@ -52,6 +52,18 @@ type AdminPositionsTemplateS struct {
 	URL  string
 }
 
+type AdminQRsTemplateS struct {
+	URL      string
+	Position string
+	GPS      string
+	ID       int
+}
+
+type AdminQRTemplateS struct {
+	QRs       []AdminQRsTemplateS
+	Positions []int
+}
+
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
 var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))
@@ -59,3 +71,4 @@ var AdminRoutesTemplate = template.Must(template.ParseFiles("templates/adminRout
 var AdminLevelTemplate = template.Must(template.ParseFiles("templates/adminLevels.html"))
 var AdminCipherTemplate = template.Must(template.ParseFiles("templates/adminCiphers.html"))
 var AdminPositionsTemplate = template.Must(template.ParseFiles("templates/adminPositions.html"))
+var AdminQRsTemplate = template.Must(template.ParseFiles("templates/adminQR.html"))

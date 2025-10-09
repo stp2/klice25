@@ -425,3 +425,86 @@ func AdminPositionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AdminQRHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(r) {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing QR code
+		if r.PostForm.Has("delete") {
+			qrID := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM qr_codes WHERE id = ?", qrID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/qr", http.StatusSeeOther)
+			return
+		}
+		// Adding a new QR code
+		positionID := r.FormValue("position")
+		uid := r.FormValue("uid")
+		if positionID == "" || uid == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO qr_codes (position_id, uid) VALUES (?, ?)", positionID, uid)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/qr", http.StatusSeeOther)
+		return
+	}
+	// Fetch all QR codes with their associated positions
+	rows, err := db.Query("SELECT qr_codes.id, qr_codes.uid, COALESCE(position_id, ''), COALESCE(gps, '') FROM qr_codes LEFT JOIN positions ON qr_codes.position_id = positions.id ORDER BY qr_codes.id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var qrs []AdminQRsTemplateS
+	for rows.Next() {
+		var qr AdminQRsTemplateS
+		if err := rows.Scan(&qr.ID, &qr.URL, &qr.Position, &qr.GPS); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		qr.URL = domain + "/qr/" + qr.URL
+		qrs = append(qrs, qr)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	// Fetch all positions for the dropdown
+	rows, err = db.Query("SELECT id FROM positions ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var positions []int
+	for rows.Next() {
+		var position int
+		if err := rows.Scan(&position); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		positions = append(positions, position)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if err := AdminQRsTemplate.Execute(w, AdminQRTemplateS{QRs: qrs, Positions: positions}); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+}
