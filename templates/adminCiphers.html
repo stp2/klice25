@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Šifry</title>
+</head>
+
+<body>
+    <h1>Šifry</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Zadání</th>
+            <th>Řešení</th>
+            <th>Nápověda</th>
+            <th>Smazat</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Assignment}}</td>
+            <td>{{.Solution}}</td>
+            <td>{{.Clue}}</td>
+            <td>
+                <form method="post" action="/admin/cipher">
+                    <input type="hidden" name="delete" value="{{.ID}}">
+                    <input type="submit" value="Smazat">
+                </form>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <h2>Nová šifra</h2>
+    <form action="/admin/cipher" method="post">
+        <label for="assignment">Zadání:</label>
+        <input type="text" id="assignment" name="assignment" required>
+        <label for="solution">Řešení:</label>
+        <input type="text" id="solution" name="solution" required>
+        <label for="clue">Nápověda:</label>
+        <input type="text" id="clue" name="clue" required>
+        <input type="submit" value="Přidat šifru">
+    </form>
+    <hr>
+    <a href="/admin">Zpět na admin panel</a>
+</body>
+
+</html>

@@ -301,3 +301,65 @@ func AdminLevelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AdminCipherHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(r) {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing cipher
+		if r.PostForm.Has("delete") {
+			cipherID := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM ciphers WHERE id = ?", cipherID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/cipher", http.StatusSeeOther)
+			return
+		}
+		// Adding a new cipher
+		assignment := r.FormValue("assignment")
+		solution := r.FormValue("solution")
+		clue := r.FormValue("clue")
+		if assignment == "" || solution == "" || clue == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO ciphers (assignment, solution, clue) VALUES (?, ?, ?)", assignment, solution, clue)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/cipher", http.StatusSeeOther)
+		return
+	}
+	rows, err := db.Query("SELECT id, assignment, solution, clue FROM ciphers ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var ciphers []AdminCipherTemplateS
+	for rows.Next() {
+		var cipher AdminCipherTemplateS
+		if err := rows.Scan(&cipher.ID, &cipher.Assignment, &cipher.Solution, &cipher.Clue); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		ciphers = append(ciphers, cipher)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if err := AdminCipherTemplate.Execute(w, ciphers); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+}

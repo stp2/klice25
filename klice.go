@@ -340,6 +340,7 @@ func main() {
 	http.HandleFunc("/admin/start", AdminStartHandler)
 	http.HandleFunc("/admin/routes", AdminRouteHandler)
 	http.HandleFunc("/admin/levels", AdminLevelHandler)
+	http.HandleFunc("/admin/cipher", AdminCipherHandler)
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
