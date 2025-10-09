@@ -195,8 +195,102 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 		return
 	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing route point
+		if r.PostForm.Has("delete") {
+			cipherID := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM tasks WHERE id = ?", cipherID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/routes", http.StatusSeeOther)
+			return
+		}
+		// Adding a new route point
+		order := r.FormValue("order")
+		level := r.FormValue("level")
+		position := r.FormValue("position")
+		cipher := r.FormValue("cipher")
+		endClue := r.FormValue("endclue")
+		if order == "" || level == "" || position == "" || cipher == "" || endClue == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO tasks (order_num, difficulty_level, position_id, cipher_id, end_clue) VALUES (?, ?, ?, ?, ?)", order, level, position, cipher, endClue)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/routes", http.StatusSeeOther)
+		return
+	}
+	// Fetch all ciphers for the dropdown
+	rows, err := db.Query("SELECT id FROM ciphers ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var ciphers []int
+	for rows.Next() {
+		var cipher int
+		if err := rows.Scan(&cipher); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		ciphers = append(ciphers, cipher)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	// Fetch all positions for the dropdown
+	rows, err = db.Query("SELECT id FROM positions ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var positions []int
+	for rows.Next() {
+		var position int
+		if err := rows.Scan(&position); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		positions = append(positions, position)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	// Levels for the dropdown
+	rows, err = db.Query("SELECT id FROM difficulty_levels ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var levels []int
+	for rows.Next() {
+		var level int
+		if err := rows.Scan(&level); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		levels = append(levels, level)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
 	// Fetch all difficulty levels
-	rows, err := db.Query("SELECT id, level_name FROM difficulty_levels ORDER BY id")
+	rows, err = db.Query("SELECT id, level_name FROM difficulty_levels ORDER BY id")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -212,10 +306,10 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		difficultyLevels = append(difficultyLevels, level)
 	}
 	// For each difficulty level, fetch the corresponding tasks and their details
-	var routes []AdminRoutesTemplateS
+	var routes []AdminRouteTemplateS
 	for _, level := range difficultyLevels {
-		var route AdminRoutesTemplateS
-		rows, err := db.Query("SELECT tasks.order_num, CIPHERS.assignment, CIPHERS.clue, tasks.end_clue, POSITIONS.gps, POSITIONS.clue, CIPHERS.solution FROM TASKS JOIN CIPHERS ON TASKS.cipher_id = ciphers.id JOIN POSITIONS on TASKS.position_id = POSITIONS.id WHERE TASKS.difficulty_level=? ORDER BY TASKS.order_num;", level.ID)
+		var route AdminRouteTemplateS
+		rows, err := db.Query("SELECT tasks.id, tasks.order_num, CIPHERS.assignment, CIPHERS.clue, tasks.end_clue, POSITIONS.gps, POSITIONS.clue, CIPHERS.solution FROM TASKS JOIN CIPHERS ON TASKS.cipher_id = ciphers.id JOIN POSITIONS on TASKS.position_id = POSITIONS.id WHERE TASKS.difficulty_level=? ORDER BY TASKS.order_num;", level.ID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
@@ -224,7 +318,7 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		route.Name = level.LevelName
 		for rows.Next() {
 			var cipher CipherTemplateS
-			if err := rows.Scan(&cipher.Order, &cipher.Assignment, &cipher.HelpText, &cipher.FinalClue, &cipher.Coordinates, &cipher.PositionHint, &cipher.Solution); err != nil {
+			if err := rows.Scan(&cipher.ID, &cipher.Order, &cipher.Assignment, &cipher.HelpText, &cipher.FinalClue, &cipher.Coordinates, &cipher.PositionHint, &cipher.Solution); err != nil {
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return
 			}
@@ -236,7 +330,15 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		routes = append(routes, route)
 	}
-	if err := AdminRoutesTemplate.Execute(w, routes); err != nil {
+	// Prepare data for the template
+	data := AdminRoutesTemplateS{
+		Routes:    routes,
+		Levels:    levels,
+		Positions: positions,
+		Ciphers:   ciphers,
+	}
+	// Render the template
+	if err := AdminRoutesTemplate.Execute(w, data); err != nil {
 		http.Error(w, "Template error", http.StatusInternalServerError)
 		return
 	}

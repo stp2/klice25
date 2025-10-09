@@ -5,6 +5,7 @@ import (
 )
 
 type CipherTemplateS struct {
+	ID           int
 	Order        uint
 	Assignment   template.HTML
 	HelpText     string
@@ -33,9 +34,16 @@ type TeamsTemplateS struct {
 	Difficulties []DifficultyLevelS
 }
 
-type AdminRoutesTemplateS struct {
+type AdminRouteTemplateS struct {
 	Name    string
 	Ciphers []CipherTemplateS
+}
+
+type AdminRoutesTemplateS struct {
+	Routes    []AdminRouteTemplateS
+	Levels    []int
+	Positions []int
+	Ciphers   []int
 }
 
 type AdminCipherTemplateS struct {

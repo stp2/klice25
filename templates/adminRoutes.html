@@ -8,7 +8,7 @@
 
 <body>
     <h1>Trasy</h1>
-    {{range .}}
+    {{range .Routes}}
     <h2>{{.Name}}</h2>
     <table border="1">
         <tr>
@@ -19,6 +19,7 @@
             <th>Nápověda</th>
             <th>Řešení</th>
             <th>Cílová indicie</th>
+            <th>Smazat</th>
         </tr>
         {{range .Ciphers}}
         <tr>
@@ -29,11 +30,38 @@
             <td>{{.HelpText}}</td>
             <td>{{.Solution}}</td>
             <td>{{.FinalClue}}</td>
+            <td>
+                <form action="/admin/routes" method="post">
+                    <input type="hidden" name="delete" value="{{.ID}}">
+                    <button type="submit">Smazat</button>
+                </form>
+            </td>
         </tr>
         {{end}}
     </table>
     <hr>
     {{end}}
+    <h2>Přidat bod trasy</h2>
+    <form action="/admin/routes" method="post">
+        Pořadí: <input type="number" name="order" required> <br>
+        Obtížnost: <select name="level" required>
+            {{range .Levels}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </select> <br>
+        Šifra: <select name="cipher" required>
+            {{range .Ciphers}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </select> <br>
+        Pozice : <select name="position" required>
+            {{range .Positions}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </select> <br>
+        Koncová indicie: <input type="text" name="endclue">
+        <button type="submit">Přidat bod trasy</button>
+    </form>
     <hr>
     <a href="/admin">Zpět na admin panel</a>
 </body>
