@@ -48,7 +48,7 @@ type AdminRoutesTemplateS struct {
 
 type AdminCipherTemplateS struct {
 	ID         int
-	Assignment string
+	Assignment template.HTML
 	Solution   string
 	Clue       string
 }

@@ -346,6 +346,9 @@ func main() {
 	http.HandleFunc("/admin/positions", AdminPositionsHandler)
 	http.HandleFunc("/admin/qr", AdminQRHandler)
 
+	// static files
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
 }
