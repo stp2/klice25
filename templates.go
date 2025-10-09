@@ -45,9 +45,17 @@ type AdminCipherTemplateS struct {
 	Clue       string
 }
 
+type AdminPositionsTemplateS struct {
+	ID   int
+	GPS  string
+	Clue string
+	URL  string
+}
+
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
 var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))
 var AdminRoutesTemplate = template.Must(template.ParseFiles("templates/adminRoutes.html"))
 var AdminLevelTemplate = template.Must(template.ParseFiles("templates/adminLevels.html"))
 var AdminCipherTemplate = template.Must(template.ParseFiles("templates/adminCiphers.html"))
+var AdminPositionsTemplate = template.Must(template.ParseFiles("templates/adminPositions.html"))

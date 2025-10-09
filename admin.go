@@ -363,3 +363,65 @@ func AdminCipherHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AdminPositionsHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(r) {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing position
+		if r.PostForm.Has("delete") {
+			positionID := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM positions WHERE id = ?", positionID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/positions", http.StatusSeeOther)
+			return
+		}
+		// Adding a new position
+		gps := r.FormValue("gps")
+		clue := r.FormValue("clue")
+		if gps == "" || clue == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO positions (gps, clue) VALUES (?, ?)", gps, clue)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/positions", http.StatusSeeOther)
+		return
+	}
+	rows, err := db.Query("SELECT positions.id, gps, clue, COALESCE(uid, '') FROM positions LEFT JOIN QR_CODES ON positions.id = QR_CODES.position_id ORDER BY positions.id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var positions []AdminPositionsTemplateS
+	for rows.Next() {
+		var position AdminPositionsTemplateS
+		if err := rows.Scan(&position.ID, &position.GPS, &position.Clue, &position.URL); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		position.URL = domain + "/qr/" + position.URL
+		positions = append(positions, position)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if err := AdminPositionsTemplate.Execute(w, positions); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+}

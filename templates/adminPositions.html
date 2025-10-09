@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pozice</title>
+</head>
+
+<body>
+    <h1>Pozice</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>GPS</th>
+            <th>Nápověda</th>
+            <th>URL</th>
+            <th>Smazat</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.GPS}}</td>
+            <td>{{.Clue}}</td>
+            <td><a href="{{.URL}}">{{.URL}}</a></td>
+            <td>
+                <form action="/admin/positions" method="post">
+                    <input type="hidden" name="delete" value="{{.ID}}">
+                    <input type="submit" value="Smazat">
+                </form>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <h2>Přidat pozici</h2>
+    <form method="post" action="/admin/positions">
+        <label for="gps">GPS:</label>
+        <input type="text" id="gps" name="gps" required><br>
+        <label for="clue">Nápověda:</label>
+        <input type="text" id="clue" name="clue" required><br>
+        <input type="submit" value="Přidat pozici">
+    </form>
+    <hr>
+    <a href="/admin">Zpět na admin panel</a>
+</body>
+
+</html>
