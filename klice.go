@@ -289,15 +289,17 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			CipherTemplateData.FinalClue = endClue
 			// get coordinates
-			var coordinates string
-			err = db.QueryRow("SELECT gps FROM POSITIONS WHERE id = (SELECT position_id FROM TASKS WHERE id = (SELECT id FROM TASKS WHERE order_num = ? AND difficulty_level = (SELECT difficulty_level FROM teams WHERE id = ?)))", order+1, teamID).Scan(&coordinates)
+			var coordinates, positionHint string
+			err = db.QueryRow("SELECT gps, clue FROM POSITIONS WHERE id = (SELECT position_id FROM TASKS WHERE id = (SELECT id FROM TASKS WHERE order_num = ? AND difficulty_level = (SELECT difficulty_level FROM teams WHERE id = ?)))", order+1, teamID).Scan(&coordinates, &positionHint)
 			if err == sql.ErrNoRows {
 				coordinates = ""
+				positionHint = ""
 			} else if err != nil {
 				http.Error(w, "Could not retrieve coordinates", http.StatusInternalServerError)
 				return
 			}
 			CipherTemplateData.Coordinates = coordinates
+			CipherTemplateData.PositionHint = positionHint
 			// get solution
 			var solution string
 			err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&solution)
