@@ -23,6 +23,16 @@ type TeamTemplateS struct {
 	Penalties  int
 }
 
+type DifficultyLevelS struct {
+	ID   int
+	Name string
+}
+
+type TeamsTemplateS struct {
+	Teams        []TeamTemplateS
+	Difficulties []DifficultyLevelS
+}
+
 type AdminRoutesTemplateS struct {
 	Name    string
 	Ciphers []CipherTemplateS

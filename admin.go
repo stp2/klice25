@@ -89,6 +89,40 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 		return
 	}
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		// Deleting an existing team
+		if r.PostForm.Has("delete") {
+			teamName := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM teams WHERE name = ?", teamName)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/teams", http.StatusSeeOther)
+			return
+		}
+		// Adding a new team
+		teamName := r.FormValue("name")
+		difficulty := r.FormValue("difficulty")
+		password := r.FormValue("password")
+		if teamName == "" || difficulty == "" || password == "" {
+			http.Error(w, "All fields are required", http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec("INSERT INTO teams (name, difficulty_level, password, last_cipher, penalty) VALUES (?, ?, ?, 1, 0)", teamName, difficulty, hashPassword(password))
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/admin/teams", http.StatusSeeOther)
+		return
+	}
+	// Fetch all teams with their difficulty levels
+	// Teams
 	rows, err := db.Query("SELECT name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY teams.difficulty_level, teams.name")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
@@ -108,7 +142,31 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-	if err := AdminTeamsTemplate.Execute(w, teams); err != nil {
+	// Difficulty levels for the dropdown
+	rows, err = db.Query("SELECT id, level_name FROM difficulty_levels ORDER BY id")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var difficultyLevels []DifficultyLevelS
+	for rows.Next() {
+		var level DifficultyLevelS
+		if err := rows.Scan(&level.ID, &level.Name); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		difficultyLevels = append(difficultyLevels, level)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	teamsData := TeamsTemplateS{
+		Teams:        teams,
+		Difficulties: difficultyLevels,
+	}
+	if err := AdminTeamsTemplate.Execute(w, teamsData); err != nil {
 		http.Error(w, "Template error", http.StatusInternalServerError)
 		return
 	}

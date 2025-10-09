@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
+    <title>Týmy</title>
 </head>
 
 <body>
@@ -14,19 +14,40 @@
             <th>Obtížnost</th>
             <th>Poslední šifra</th>
             <th>Penalizace (minuty)</th>
+            <th>Smazat tým</th>
+            </th>
         </tr>
-        {{range .}}
+        {{range .Teams}}
         <tr>
             <td>{{.TeamName}}</td>
             <td>{{.Difficulty}}</td>
             <td>{{.LastCipher}}</td>
             <td>{{.Penalties}}</td>
+            <td>
+                <form action="/admin/teams" method="post">
+                    <input type="hidden" name="delete" value="{{.TeamName}}">
+                    <button type="submit">Smazat</button>
+                </form>
+            </td>
         </tr>
         {{end}}
     </table>
     <hr>
     <p>Vynulování penalizací a posledních šifer.</p>
     <a href="/admin/start">Start Závodu</a>
+    <hr>
+    <h2>Přidat tým</h2>
+    <form method="post" action="/admin/teams">
+        Název týmu: <input type="text" name="name" required>
+        Obtížnost:
+        <select name="difficulty">
+            {{range .Difficulties}}
+            <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+        </select>
+        Heslo: <input type="text" name="password" required>
+        <input type="submit" value="Přidat tým">
+    </form>
     <hr>
     <a href="/admin">Zpět na admin panel</a>
 </body>

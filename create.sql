@@ -10,10 +10,9 @@ DROP TABLE IF EXISTS PENALTIES;
 CREATE TABLE TEAMS (
     id INTEGER PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    city VARCHAR(100) NOT NULL,
     difficulty_level INTEGER NOT NULL,
     password VARCHAR(255) NOT NULL,
-    last_cipher INTEGER DEFAULT 0,
+    last_cipher INTEGER DEFAULT 0, -- index of cipher which team is solving or searching now
     penalty INTEGER DEFAULT 0,
     FOREIGN KEY (difficulty_level) REFERENCES DIFFICULTY_LEVELS(id)
 );

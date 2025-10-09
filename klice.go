@@ -181,13 +181,13 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// check if the task is available for the team
-		// if order > last_cipher + 1, task is not yet available
-		// if order == last_cipher + 1, task is now available, update last_cipher
+		// if order > last_cipher, task is not yet available
+		// if order == last_cipher, task is now available
 		// if order <= last_cipher, task has been already visited, allow viewing
-		if order > last_cipher+1 {
+		if order > last_cipher {
 			http.Error(w, "This task is not yet available", http.StatusForbidden)
 			return
-		} else if order == last_cipher+1 {
+		} else if order == last_cipher {
 			last_cipher = order
 			_, err = db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order, teamID)
 			if err != nil {
