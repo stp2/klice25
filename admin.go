@@ -356,8 +356,8 @@ func AdminLevelHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// Deleting an existing difficulty level
 		if r.PostForm.Has("delete") {
-			levelName := r.FormValue("delete")
-			_, err := db.Exec("DELETE FROM difficulty_levels WHERE level_name = ?", levelName)
+			id := r.FormValue("delete")
+			_, err := db.Exec("DELETE FROM difficulty_levels WHERE id = ?", id)
 			if err != nil {
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return
@@ -379,16 +379,16 @@ func AdminLevelHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin/levels", http.StatusSeeOther)
 		return
 	}
-	rows, err := db.Query("SELECT level_name FROM difficulty_levels ORDER BY id")
+	rows, err := db.Query("SELECT id, level_name FROM difficulty_levels ORDER BY id")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
-	var difficultyLevels []string
+	var difficultyLevels []AdminLevelTemplateS
 	for rows.Next() {
-		var level string
-		if err := rows.Scan(&level); err != nil {
+		var level AdminLevelTemplateS
+		if err := rows.Scan(&level.ID, &level.Name); err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}

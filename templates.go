@@ -72,6 +72,11 @@ type AdminQRTemplateS struct {
 	Positions []int
 }
 
+type AdminLevelTemplateS struct {
+	ID   int
+	Name string
+}
+
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
 var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))

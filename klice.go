@@ -13,6 +13,7 @@ import (
 )
 
 const domain = "http://localhost:8080"
+const dbFile = "./klice.db"
 
 var db *sql.DB
 
@@ -323,7 +324,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
-	db, err = sql.Open("sqlite3", "./klice.db?_fk=on")
+	db, err = sql.Open("sqlite3", dbFile+"?_fk=on")
 	if err != nil {
 		fmt.Println("Error opening database:", err)
 		return

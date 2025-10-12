@@ -10,15 +10,17 @@
     <h1>Úrovně obtížnosti</h1>
     <table border="1">
         <tr>
+            <th>ID</th>
             <th>Jméno</th>
             <th>Smazat</th>
         </tr>
         {{range .}}
         <tr>
-            <td>{{.}}</td>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
             <td>
                 <form action="/admin/levels" method="post">
-                    <input type="hidden" name="delete" value="{{.}}">
+                    <input type="hidden" name="delete" value="{{.ID}}">
                     <button type="submit">Smazat</button>
                 </form>
             </td>
