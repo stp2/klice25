@@ -12,7 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const domain = "http://localhost:8080"
+const domain = "https://klice.h21.cz"
 const dbFile = "./klice.db"
 
 var db *sql.DB

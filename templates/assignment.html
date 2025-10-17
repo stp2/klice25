@@ -39,6 +39,8 @@
         <input id="gps" value="{{.Coordinates}}" readonly />
         <br>
         <button onclick="copyToClipboard()">Zkopírovat do schránky</button>
+        <br>
+        Nápověda k nalezení pozice: {{.PositionHint}}
     </p>
     <p>Nápověda k nalezení cíle: {{.FinalClue}}</p>
     {{end}}
