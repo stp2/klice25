@@ -38,7 +38,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 				Value:    base64.StdEncoding.EncodeToString([]byte(username + ":" + hashPassword(password))),
 				Path:     "/admin/",
 				HttpOnly: true,
-				MaxAge:   3600,
 			})
 			http.Redirect(w, r, "/admin/", http.StatusSeeOther)
 		}

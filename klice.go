@@ -211,7 +211,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		CipherTemplateData := CipherTemplateS{
-			Order:       uint(cipherID),
+			Order:       uint(order),
 			Assignment:  template.HTML(assignment),
 			HelpText:    "",
 			FinalClue:   "",
