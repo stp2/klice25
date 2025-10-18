@@ -308,7 +308,7 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 	var routes []AdminRouteTemplateS
 	for _, level := range difficultyLevels {
 		var route AdminRouteTemplateS
-		rows, err := db.Query("SELECT tasks.id, tasks.order_num, CIPHERS.assignment, CIPHERS.clue, tasks.end_clue, POSITIONS.gps, POSITIONS.clue, CIPHERS.solution FROM TASKS JOIN CIPHERS ON TASKS.cipher_id = ciphers.id JOIN POSITIONS on TASKS.position_id = POSITIONS.id WHERE TASKS.difficulty_level=? ORDER BY TASKS.order_num;", level.ID)
+		rows, err := db.Query("SELECT tasks.id, tasks.order_num, CIPHERS.assignment, CIPHERS.clue, tasks.end_clue, POSITIONS.gps, POSITIONS.clue, CIPHERS.solution, COALESCE(QR_CODES.uid, '') FROM TASKS JOIN CIPHERS ON TASKS.cipher_id = ciphers.id JOIN POSITIONS on TASKS.position_id = POSITIONS.id LEFT JOIN QR_CODES ON QR_CODES.position_id = POSITIONS.id WHERE TASKS.difficulty_level=? ORDER BY TASKS.order_num;", level.ID)
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
@@ -317,10 +317,11 @@ func AdminRouteHandler(w http.ResponseWriter, r *http.Request) {
 		route.Name = level.LevelName
 		for rows.Next() {
 			var cipher CipherTemplateS
-			if err := rows.Scan(&cipher.ID, &cipher.Order, &cipher.Assignment, &cipher.HelpText, &cipher.FinalClue, &cipher.Coordinates, &cipher.PositionHint, &cipher.Solution); err != nil {
+			if err := rows.Scan(&cipher.ID, &cipher.Order, &cipher.Assignment, &cipher.HelpText, &cipher.FinalClue, &cipher.Coordinates, &cipher.PositionHint, &cipher.Solution, &cipher.URL); err != nil {
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return
 			}
+			cipher.URL = domain + "/qr/" + cipher.URL
 			route.Ciphers = append(route.Ciphers, cipher)
 		}
 		if err := rows.Err(); err != nil {

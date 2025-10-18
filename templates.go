@@ -15,6 +15,7 @@ type CipherTemplateS struct {
 	Solution     string
 	Help         int
 	Wrong        bool
+	URL          string
 }
 
 type TeamTemplateS struct {

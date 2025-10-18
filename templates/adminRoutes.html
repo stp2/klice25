@@ -12,6 +12,7 @@
     <h2>{{.Name}}</h2>
     <table border="1">
         <tr>
+            <th>ID</th>
             <th>Pořadí</th>
             <th>Souřadnice</th>
             <th>Nápověda pozice</th>
@@ -19,10 +20,12 @@
             <th>Nápověda</th>
             <th>Řešení</th>
             <th>Cílová indicie</th>
+            <th>URL</th>
             <th>Smazat</th>
         </tr>
         {{range .Ciphers}}
         <tr>
+            <td>{{.ID}}</td>
             <td>{{.Order}}</td>
             <td>{{.Coordinates}}</td>
             <td>{{.PositionHint}}</td>
@@ -30,6 +33,7 @@
             <td>{{.HelpText}}</td>
             <td>{{.Solution}}</td>
             <td>{{.FinalClue}}</td>
+            <td><a href="{{.URL}}">{{.URL}}</a></td>
             <td>
                 <form action="/admin/routes" method="post">
                     <input type="hidden" name="delete" value="{{.ID}}">
