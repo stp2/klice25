@@ -487,6 +487,22 @@ func AdminPositionsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/admin/positions", http.StatusSeeOther)
 			return
 		}
+		if r.PostForm.Has("update") {
+			// Updating an existing position
+			positionID := r.FormValue("update")
+			gps := r.FormValue("gps")
+			if gps == "" {
+				http.Error(w, "GPS field cannot be empty", http.StatusBadRequest)
+				return
+			}
+			_, err := db.Exec("UPDATE positions SET gps = ? WHERE id = ?", gps, positionID)
+			if err != nil {
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/positions", http.StatusSeeOther)
+			return
+		}
 		// Adding a new position
 		gps := r.FormValue("gps")
 		clue := r.FormValue("clue")
