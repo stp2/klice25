@@ -43,9 +43,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		default:
 			sessionID := hashedPassword
 			cookie := &http.Cookie{
-				Name:  "session_id",
-				Value: sessionID,
-				Path:  "/",
+				Name:     "session_id",
+				Value:    sessionID,
+				Path:     "/",
+				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
 			}
 			http.SetCookie(w, cookie)
 
@@ -249,7 +251,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 				help = 2
 				db.Exec("UPDATE penalties SET minutes = 30 WHERE team_id = ? AND task_id = ?", teamID, taskID)
 				db.Exec("UPDATE teams SET penalty = penalty + 30, last_cipher = ? WHERE id = ?", order+1, teamID)
-			} else if answer := r.FormValue("solution"); answer != "" { // answer submission
+			} else if answer := r.FormValue("solution"); answer != "" && help < 2 { // answer submission
 				var correctAnswer string
 				err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&correctAnswer)
 				if err != nil {
