@@ -249,7 +249,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 				db.Exec("UPDATE teams SET penalty = penalty + 5 WHERE id = ?", teamID)
 			} else if r.FormValue("help") == "2" && help == 1 { // give up
 				help = 2
-				db.Exec("UPDATE penalties SET minutes = 30 WHERE team_id = ? AND task_id = ?", teamID, taskID)
+				db.Exec("UPDATE penalties SET minutes = 35 WHERE team_id = ? AND task_id = ?", teamID, taskID)
 				db.Exec("UPDATE teams SET penalty = penalty + 30, last_cipher = ? WHERE id = ?", order+1, teamID)
 			} else if answer := r.FormValue("solution"); answer != "" && help < 2 { // answer submission
 				var correctAnswer string
