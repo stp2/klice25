@@ -293,8 +293,8 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			var coordinates, positionHint string
 			err = db.QueryRow("SELECT gps, clue FROM POSITIONS WHERE id = (SELECT position_id FROM TASKS WHERE id = (SELECT id FROM TASKS WHERE order_num = ? AND difficulty_level = (SELECT difficulty_level FROM teams WHERE id = ?)))", order+1, teamID).Scan(&coordinates, &positionHint)
 			if err == sql.ErrNoRows {
-				coordinates = ""
-				positionHint = ""
+				coordinates = "Konec, vraťte se."
+				positionHint = "KONEC"
 			} else if err != nil {
 				http.Error(w, "Could not retrieve coordinates", http.StatusInternalServerError)
 				return
