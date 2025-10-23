@@ -495,7 +495,12 @@ func AdminPositionsHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "GPS field cannot be empty", http.StatusBadRequest)
 				return
 			}
-			_, err := db.Exec("UPDATE positions SET gps = ? WHERE id = ?", gps, positionID)
+			clue := r.FormValue("clue")
+			if clue == "" {
+				http.Error(w, "Clue field cannot be empty", http.StatusBadRequest)
+				return
+			}
+			_, err := db.Exec("UPDATE positions SET gps = ?, clue = ? WHERE id = ?", gps, clue, positionID)
 			if err != nil {
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return

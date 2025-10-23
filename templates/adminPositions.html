@@ -19,14 +19,16 @@
         {{range .}}
         <tr>
             <td>{{.ID}}</td>
-            <td>
-                <form action="/admin/positions" method="post">
+            <form action="/admin/positions" method="post">
+                <input type="hidden" name="update" value="{{.ID}}">
+                <td>
                     <input type="text" name="gps" value="{{.GPS}}">
-                    <input type="hidden" name="update" value="{{.ID}}">
+                </td>
+                <td>
+                    <input type="text" name="clue" value="{{.Clue}}">
                     <input type="submit" value="Upravit">
-                </form>
-            </td>
-            <td>{{.Clue}}</td>
+                </td>
+            </form>
             <td><a href="{{.URL}}">{{.URL}}</a></td>
             <td>
                 <form action="/admin/positions" method="post">
