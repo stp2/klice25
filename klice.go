@@ -15,6 +15,11 @@ import (
 const domain = "https://klice.h21.cz"
 const dbFile = "./klice.db"
 
+const (
+	smallHelpPenalty = 5
+	giveUpPenalty    = 30
+)
+
 var db *sql.DB
 
 func hashPassword(password string) string {
@@ -231,9 +236,9 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// determine help level based on penalties
-		if penalty > 0 && penalty < 15 {
+		if penalty > 0 && penalty <= smallHelpPenalty {
 			help = 1
-		} else if penalty >= 15 {
+		} else if penalty > smallHelpPenalty {
 			help = 2
 		}
 
@@ -245,12 +250,12 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			if r.FormValue("help") == "1" && help == 0 { // small help
 				help = 1
-				db.Exec("INSERT INTO penalties (team_id, task_id, minutes) VALUES (?, ?, 5)", teamID, taskID)
-				db.Exec("UPDATE teams SET penalty = penalty + 5 WHERE id = ?", teamID)
+				db.Exec("INSERT INTO penalties (team_id, task_id, minutes) VALUES (?, ?, ?)", teamID, taskID, smallHelpPenalty)
+				db.Exec("UPDATE teams SET penalty = penalty + ? WHERE id = ?", smallHelpPenalty, teamID)
 			} else if r.FormValue("help") == "2" && help == 1 { // give up
 				help = 2
-				db.Exec("UPDATE penalties SET minutes = 35 WHERE team_id = ? AND task_id = ?", teamID, taskID)
-				db.Exec("UPDATE teams SET penalty = penalty + 30, last_cipher = ? WHERE id = ?", order+1, teamID)
+				db.Exec("UPDATE penalties SET minutes = minutes + ? WHERE team_id = ? AND task_id = ?", giveUpPenalty, teamID, taskID)
+				db.Exec("UPDATE teams SET penalty = penalty + ?, last_cipher = ? WHERE id = ?", giveUpPenalty, order+1, teamID)
 			} else if answer := r.FormValue("solution"); answer != "" && help < 2 { // answer submission
 				var correctAnswer string
 				err = db.QueryRow("SELECT solution FROM CIPHERS WHERE id = ?", cipherID).Scan(&correctAnswer)
