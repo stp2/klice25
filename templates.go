@@ -1,8 +1,12 @@
 package main
 
 import (
+	"embed"
 	"html/template"
 )
+
+//go:embed templates/*.html
+var templatesFS embed.FS
 
 type CipherTemplateS struct {
 	ID           int
@@ -86,12 +90,12 @@ type AdminPenaltiesTemplateS struct {
 	Minutes   int
 }
 
-var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
-var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
-var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))
-var AdminRoutesTemplate = template.Must(template.ParseFiles("templates/adminRoutes.html"))
-var AdminLevelTemplate = template.Must(template.ParseFiles("templates/adminLevels.html"))
-var AdminCipherTemplate = template.Must(template.ParseFiles("templates/adminCiphers.html"))
-var AdminPositionsTemplate = template.Must(template.ParseFiles("templates/adminPositions.html"))
-var AdminQRsTemplate = template.Must(template.ParseFiles("templates/adminQR.html"))
-var AdminPenaltiesTemplate = template.Must(template.ParseFiles("templates/adminPenalties.html"))
+var CipherTemplate = template.Must(template.ParseFS(templatesFS, "templates/assignment.html"))
+var TeamTemplate = template.Must(template.ParseFS(templatesFS, "templates/team.html"))
+var AdminTeamsTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminTeams.html"))
+var AdminRoutesTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminRoutes.html"))
+var AdminLevelTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminLevels.html"))
+var AdminCipherTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminCiphers.html"))
+var AdminPositionsTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminPositions.html"))
+var AdminQRsTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminQR.html"))
+var AdminPenaltiesTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminPenalties.html"))

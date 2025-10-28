@@ -66,7 +66,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case http.MethodGet:
-		http.ServeFile(w, r, "templates/login.html")
+		http.ServeFileFS(w, r, templatesFS, "templates/login.html")
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -146,8 +146,8 @@ func teamInfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func qrHandler(w http.ResponseWriter, r *http.Request) {
-	uid, found := strings.CutPrefix(r.URL.Path, "/qr/")
-	if !found || uid == "" {
+	uid := r.PathValue("qr")
+	if uid == "" {
 		http.Error(w, "Invalid QR code", http.StatusBadRequest)
 		return
 	}
@@ -354,7 +354,7 @@ func main() {
 	http.HandleFunc("/admin/levels", AdminLevelHandler)
 	http.HandleFunc("/admin/cipher", AdminCipherHandler)
 	http.HandleFunc("/admin/positions", AdminPositionsHandler)
-	http.HandleFunc("/admin/qr", AdminQRHandler)
+	http.HandleFunc("/admin/qr/{qr...}", AdminQRHandler)
 	http.HandleFunc("/admin/penalties", AdminPenaltiesHandler)
 
 	// static files
