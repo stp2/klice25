@@ -54,6 +54,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				Path:     "/",
 				HttpOnly: true,
 				SameSite: http.SameSiteStrictMode,
+				Secure:   true,
 			}
 			http.SetCookie(w, cookie)
 
@@ -61,7 +62,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				redir.MaxAge = -1
 				http.SetCookie(w, redir)
-				http.Redirect(w, r, redir.Value, http.StatusSeeOther)
+				http.Redirect(w, r, safeRedirectURL(redir.Value), http.StatusSeeOther)
 			} else {
 				http.Redirect(w, r, "/team", http.StatusSeeOther)
 			}
@@ -110,6 +111,7 @@ func isLoggedIn(w http.ResponseWriter, r *http.Request) (bool, int) {
 			Path:     "/",
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
+			Secure:   true,
 		}
 		http.SetCookie(w, redir)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -328,6 +330,13 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func safeRedirectURL(u string) string {
+	if strings.HasPrefix(u, "/") && !strings.HasPrefix(u, "//") {
+		return u
+	}
+	return "/team"
 }
 
 func main() {

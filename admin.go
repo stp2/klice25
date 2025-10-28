@@ -38,6 +38,8 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 				Value:    base64.StdEncoding.EncodeToString([]byte(username + ":" + hashPassword(password))),
 				Path:     "/admin/",
 				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
+				Secure:   true,
 			})
 			http.Redirect(w, r, "/admin/", http.StatusSeeOther)
 		}
@@ -61,8 +63,8 @@ func isAdmin(r *http.Request) bool {
 		return false
 	}
 	var username, passwordHash string
-	regexp := regexp.MustCompile(`^([^:]+):([a-f0-9]+)$`)
-	matches := regexp.FindStringSubmatch(string(decoded))
+	regex := regexp.MustCompile(`^([^:]+):([a-f0-9]+)$`)
+	matches := regex.FindStringSubmatch(string(decoded))
 	if len(matches) != 3 {
 		return false
 	}
