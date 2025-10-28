@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -343,7 +344,7 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
 	http.HandleFunc("/team", teamInfoHandler)
-	http.HandleFunc("/qr/", qrHandler)
+	http.HandleFunc("/qr/{qr...}", qrHandler)
 	// admin app
 	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin/logout", adminLogoutHandler)
@@ -354,12 +355,21 @@ func main() {
 	http.HandleFunc("/admin/levels", AdminLevelHandler)
 	http.HandleFunc("/admin/cipher", AdminCipherHandler)
 	http.HandleFunc("/admin/positions", AdminPositionsHandler)
-	http.HandleFunc("/admin/qr/{qr...}", AdminQRHandler)
+	http.HandleFunc("/admin/qr", AdminQRHandler)
 	http.HandleFunc("/admin/penalties", AdminPenaltiesHandler)
 
 	// static files
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
+	srv := &http.Server{
+		Addr:           ":8080",
+		Handler:        nil,
+		ReadTimeout:    10 * time.Second, // zabrání Slowloris útokům
+		WriteTimeout:   15 * time.Second, // omezení dlouhých odpovědí
+		IdleTimeout:    60 * time.Second, // ukončení nečinných spojení
+		MaxHeaderBytes: 1 << 20,          // max. 1 MB hlavičky
+	}
+
 	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", nil)
+	srv.ListenAndServe()
 }
