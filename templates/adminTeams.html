@@ -10,6 +10,7 @@
     <h1>Týmy</h1>
     <table border="1">
         <tr>
+            <th>ID</th>
             <th>Název týmu</th>
             <th>Obtížnost</th>
             <th>Poslední šifra</th>
@@ -19,6 +20,7 @@
         </tr>
         {{range .Teams}}
         <tr>
+            <td>{{.ID}}</td>
             <td>{{.TeamName}}</td>
             <td>{{.Difficulty}}</td>
             <td>{{.LastCipher}}</td>

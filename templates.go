@@ -19,6 +19,7 @@ type CipherTemplateS struct {
 }
 
 type TeamTemplateS struct {
+	ID         int
 	TeamName   string
 	Difficulty string
 	LastCipher int

@@ -122,7 +122,7 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Fetch all teams with their difficulty levels
 	// Teams
-	rows, err := db.Query("SELECT name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY teams.difficulty_level, teams.name")
+	rows, err := db.Query("SELECT teams.id, name, difficulty_levels.level_name, last_cipher, penalty FROM teams JOIN difficulty_levels ON teams.difficulty_level = difficulty_levels.id ORDER BY teams.difficulty_level, teams.name")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -131,7 +131,7 @@ func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {
 	var teams []TeamTemplateS
 	for rows.Next() {
 		var team TeamTemplateS
-		if err := rows.Scan(&team.TeamName, &team.Difficulty, &team.LastCipher, &team.Penalties); err != nil {
+		if err := rows.Scan(&team.ID, &team.TeamName, &team.Difficulty, &team.LastCipher, &team.Penalties); err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
