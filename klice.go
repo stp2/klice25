@@ -198,12 +198,12 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "This task is not yet available", http.StatusForbidden)
 			return
 		} else if order == last_cipher {
-			last_cipher = order
-			_, err = db.Exec("UPDATE teams SET last_cipher = ? WHERE id = ?", order, teamID)
+			_, err := db.Exec("UPDATE teams SET last_loaded_cipher = ? WHERE id = ?", order, teamID)
 			if err != nil {
-				http.Error(w, "Could not update last cipher", http.StatusInternalServerError)
+				http.Error(w, "Could not update last loaded cipher", http.StatusInternalServerError)
 				return
 			}
+
 		} else if order < last_cipher {
 			help = 2
 		}

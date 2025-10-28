@@ -5,10 +5,10 @@ INSERT INTO DIFFICULTY_LEVELS (id, level_name) VALUES
     (3, 'Těžká');
 
 -- Vložení týmů: heslo1, heslo2, heslo3
-INSERT INTO TEAMS (id, name, difficulty_level, password, last_cipher, penalty) VALUES
-    (1, 'Rychlé šípy', 1, '4bc2ef0648cdf275032c83bb1e87dd554d47f4be293670042212c8a01cc2ccbe', 1, 0),
-    (2, 'Vlčí smečka', 2, '274efeaa827a33d7e35be9a82cd6150b7caf98f379a4252aa1afce45664dcbe1', 1, 10),
-    (3, 'Orli', 3, '05af533c6614544a704c4cf51a45be5c10ff19bd10b7aa1dfe47efc0fd059ede', 1, 5);
+INSERT INTO TEAMS (id, name, difficulty_level, password, last_cipher, last_loaded_cipher, penalty) VALUES
+    (1, 'Rychlé šípy', 1, '4bc2ef0648cdf275032c83bb1e87dd554d47f4be293670042212c8a01cc2ccbe', 1, 0, 0),
+    (2, 'Vlčí smečka', 2, '274efeaa827a33d7e35be9a82cd6150b7caf98f379a4252aa1afce45664dcbe1', 1, 0, 10),
+    (3, 'Orli', 3, '05af533c6614544a704c4cf51a45be5c10ff19bd10b7aa1dfe47efc0fd059ede', 1, 0, 5);
 
 -- Vložení pozic
 INSERT INTO POSITIONS (id, gps, clue) VALUES

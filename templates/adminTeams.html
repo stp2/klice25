@@ -13,10 +13,10 @@
             <th>ID</th>
             <th>Název týmu</th>
             <th>Obtížnost</th>
-            <th>Poslední šifra</th>
+            <th>Právě řešená šifra</th>
+            <th>Poslední načtená šifra</th>
             <th>Penalizace (minuty)</th>
             <th>Smazat tým</th>
-            </th>
         </tr>
         {{range .Teams}}
         <tr>
@@ -24,6 +24,7 @@
             <td>{{.TeamName}}</td>
             <td>{{.Difficulty}}</td>
             <td>{{.LastCipher}}</td>
+            <td>{{.LastLoadedCipher}}</td>
             <td>{{.Penalties}}</td>
             <td>
                 <form action="/admin/teams" method="post">

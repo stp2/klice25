@@ -13,6 +13,7 @@ CREATE TABLE TEAMS (
     difficulty_level INTEGER NOT NULL,
     password VARCHAR(255) NOT NULL,
     last_cipher INTEGER DEFAULT 0, -- index of cipher which team is solving or searching now
+    last_loaded_cipher INTEGER DEFAULT 0, -- index of cipher which team has loaded last time
     penalty INTEGER DEFAULT 0,
     FOREIGN KEY (difficulty_level) REFERENCES DIFFICULTY_LEVELS(id)
 );

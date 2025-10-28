@@ -19,11 +19,12 @@ type CipherTemplateS struct {
 }
 
 type TeamTemplateS struct {
-	ID         int
-	TeamName   string
-	Difficulty string
-	LastCipher int
-	Penalties  int
+	ID               int
+	TeamName         string
+	Difficulty       string
+	LastCipher       int
+	LastLoadedCipher int
+	Penalties        int
 }
 
 type DifficultyLevelS struct {
