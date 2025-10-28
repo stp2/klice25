@@ -79,6 +79,12 @@ type AdminLevelTemplateS struct {
 	Name string
 }
 
+type AdminPenaltiesTemplateS struct {
+	TeamName  string
+	TaskOrder uint
+	Minutes   int
+}
+
 var CipherTemplate = template.Must(template.ParseFiles("templates/assignment.html"))
 var TeamTemplate = template.Must(template.ParseFiles("templates/team.html"))
 var AdminTeamsTemplate = template.Must(template.ParseFiles("templates/adminTeams.html"))
@@ -87,3 +93,4 @@ var AdminLevelTemplate = template.Must(template.ParseFiles("templates/adminLevel
 var AdminCipherTemplate = template.Must(template.ParseFiles("templates/adminCiphers.html"))
 var AdminPositionsTemplate = template.Must(template.ParseFiles("templates/adminPositions.html"))
 var AdminQRsTemplate = template.Must(template.ParseFiles("templates/adminQR.html"))
+var AdminPenaltiesTemplate = template.Must(template.ParseFiles("templates/adminPenalties.html"))

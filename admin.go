@@ -631,3 +631,34 @@ func AdminQRHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AdminPenaltiesHandler(w http.ResponseWriter, r *http.Request) {
+	if !isAdmin(r) {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+	// Fetch all penalties with team names and task orders
+	rows, err := db.Query("SELECT teams.name, tasks.order_num, penalties.minutes FROM penalties JOIN teams ON penalties.team_id = teams.id JOIN tasks ON penalties.task_id = tasks.id ORDER BY teams.name, tasks.order_num")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var penalties []AdminPenaltiesTemplateS
+	for rows.Next() {
+		var penalty AdminPenaltiesTemplateS
+		if err := rows.Scan(&penalty.TeamName, &penalty.TaskOrder, &penalty.Minutes); err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		penalties = append(penalties, penalty)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if err := AdminPenaltiesTemplate.Execute(w, penalties); err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+}

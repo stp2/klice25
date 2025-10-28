@@ -355,6 +355,7 @@ func main() {
 	http.HandleFunc("/admin/cipher", AdminCipherHandler)
 	http.HandleFunc("/admin/positions", AdminPositionsHandler)
 	http.HandleFunc("/admin/qr", AdminQRHandler)
+	http.HandleFunc("/admin/penalties", AdminPenaltiesHandler)
 
 	// static files
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

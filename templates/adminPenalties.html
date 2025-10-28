@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Penalizace týmů</title>
+</head>
+
+<body>
+    <h1>Penalizace týmů</h1>
+    <table border="1">
+        <tr>
+            <th>Název týmu</th>
+            <th>Pořadí šifry</th>
+            <th>Minuty</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.TeamName}}</td>
+            <td>{{.TaskOrder}}</td>
+            <td>{{.Minutes}}</td>
+        </tr>
+        {{end}}
+    </table>
+    <hr>
+    <a href="/admin">Zpět na admin panel</a>
+</body>
+
+</html>
