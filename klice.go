@@ -287,7 +287,7 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Could not retrieve help text", http.StatusInternalServerError)
 				return
 			}
-			CipherTemplateData.HelpText = helpText
+			CipherTemplateData.HelpText = template.HTML(helpText)
 		case 2: // next cipher
 			// get end clue
 			var endClue string

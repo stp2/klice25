@@ -12,7 +12,7 @@ type CipherTemplateS struct {
 	ID           int
 	Order        uint
 	Assignment   template.HTML
-	HelpText     string
+	HelpText     template.HTML
 	FinalClue    string
 	Coordinates  string
 	PositionHint string
