@@ -231,18 +231,20 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get penalties for this task and team
-		err = db.QueryRow("SELECT minutes FROM penalties WHERE team_id = ? AND task_id = ?", teamID, taskID).Scan(&penalty)
-		if err == sql.ErrNoRows {
-			penalty = 0
-		} else if err != nil {
-			http.Error(w, "Could not retrieve penalties", http.StatusInternalServerError)
-			return
-		}
-		// determine help level based on penalties
-		if penalty > 0 && penalty <= smallHelpPenalty {
-			help = 1
-		} else if penalty > smallHelpPenalty {
-			help = 2
+		if help == 0 {
+			err = db.QueryRow("SELECT minutes FROM penalties WHERE team_id = ? AND task_id = ?", teamID, taskID).Scan(&penalty)
+			if err == sql.ErrNoRows {
+				penalty = 0
+			} else if err != nil {
+				http.Error(w, "Could not retrieve penalties", http.StatusInternalServerError)
+				return
+			}
+			// determine help level based on penalties
+			if penalty > 0 && penalty <= smallHelpPenalty {
+				help = 1
+			} else if penalty > smallHelpPenalty {
+				help = 2
+			}
 		}
 
 		// handle answer and help form submission
