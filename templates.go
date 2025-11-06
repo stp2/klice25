@@ -57,7 +57,7 @@ type AdminCipherTemplateS struct {
 	ID         int
 	Assignment template.HTML
 	Solution   string
-	Clue       string
+	Clue       template.HTML
 }
 
 type AdminPositionsTemplateS struct {
