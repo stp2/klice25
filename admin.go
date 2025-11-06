@@ -15,7 +15,10 @@ type difficultyLevel struct {
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "templates/adminLogin.html")
+		err := adminLoginTemplate.Execute(w, false)
+		if err != nil {
+			http.Error(w, "Could not render template", http.StatusInternalServerError)
+		}
 	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Error parsing form", http.StatusBadRequest)
@@ -29,7 +32,10 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		).Scan(new(int))
 		switch {
 		case err == sql.ErrNoRows:
-			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			err := adminLoginTemplate.Execute(w, true)
+			if err != nil {
+				http.Error(w, "Could not render template", http.StatusInternalServerError)
+			}
 		case err != nil:
 			http.Error(w, "Database error", http.StatusInternalServerError)
 		default:
@@ -82,7 +88,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 		return
 	}
-	http.ServeFile(w, r, "templates/adminPanel.html")
+	http.ServeFileFS(w, r, templatesFS, "templates/adminPanel.html")
 }
 
 func adminTeamsHandler(w http.ResponseWriter, r *http.Request) {

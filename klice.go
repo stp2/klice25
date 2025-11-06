@@ -41,7 +41,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		err := db.QueryRow("SELECT 1 FROM teams WHERE password = ?", hashedPassword).Scan(new(int))
 		switch {
 		case err == sql.ErrNoRows:
-			http.Error(w, "No team found", http.StatusUnauthorized)
+			err = LoginTemplate.Execute(w, true)
+			if err != nil {
+				http.Error(w, "Could not render template", http.StatusInternalServerError)
+			}
 			return
 		case err != nil:
 			http.Error(w, "Could not retrieve team", http.StatusInternalServerError)
@@ -68,7 +71,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case http.MethodGet:
-		http.ServeFileFS(w, r, templatesFS, "templates/login.html")
+		err := LoginTemplate.Execute(w, false)
+		if err != nil {
+			http.Error(w, "Could not render template", http.StatusInternalServerError)
+		}
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

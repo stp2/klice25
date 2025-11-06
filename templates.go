@@ -99,3 +99,5 @@ var AdminCipherTemplate = template.Must(template.ParseFS(templatesFS, "templates
 var AdminPositionsTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminPositions.html"))
 var AdminQRsTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminQR.html"))
 var AdminPenaltiesTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminPenalties.html"))
+var LoginTemplate = template.Must(template.ParseFS(templatesFS, "templates/login.html"))
+var adminLoginTemplate = template.Must(template.ParseFS(templatesFS, "templates/adminLogin.html"))

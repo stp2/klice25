@@ -2,17 +2,33 @@
 <html lang="cs">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin — přihlášení</title>
 </head>
 
 <body>
     <h1>Admin Login</h1>
-    <form method="post">
-        Uživatelské jméno: <input type="text" name="username"><br>
-        Heslo: <input type="password" name="password"><br>
-        <input type="submit" value="Přihlásit se">
+
+    {{if .}}
+    <p style="color: red;"><strong>Chybné uživatelské jméno nebo heslo.</strong></p>
+    {{end}}
+
+    <form method="post" autocomplete="off">
+        <div>
+            <label for="username">Uživatelské jméno</label><br>
+            <input id="username" name="username" type="text" required>
+        </div>
+        <div>
+            <label for="password">Heslo</label><br>
+            <input id="password" name="password" type="password" required>
+        </div>
+        <div>
+            <input type="submit" value="Přihlásit se">
+        </div>
     </form>
+
+    <p><a href="/admin">Zpět na admin panel</a></p>
 </body>
 
 </html>

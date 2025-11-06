@@ -2,56 +2,269 @@
 <html lang="cs">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Zadání šifry {{.Order}}</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --accent: #0b6efd;
+            --muted: #6b7280;
+            --danger: #ef4444;
+            --border: #e6e9ee;
+            --radius: 12px;
+            --gap: 14px;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            color-scheme: light;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(180deg, #f8fbff, var(--bg));
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 28px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(20, 30, 60, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: #0f172a;
+        }
+
+        .meta {
+            color: var(--muted);
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .assignment {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            color: #0f172a;
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--gap);
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(11, 110, 253, 0.12);
+            background: linear-gradient(180deg, var(--accent), #0654d6);
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.ghost {
+            background: #fff;
+            color: #0f172a;
+            border: 1px solid var(--border);
+            box-shadow: none;
+        }
+
+        .btn.warn {
+            background: var(--danger);
+            border-color: rgba(239, 68, 68, 0.9);
+        }
+
+        .helpbox {
+            background: #f8faff;
+            border: 1px solid rgba(11, 110, 253, 0.08);
+            padding: 12px;
+            border-radius: 8px;
+            color: #0b2540;
+        }
+
+        .solution {
+            background: #fbffef;
+            border: 1px solid rgba(34, 197, 94, 0.12);
+            padding: 12px;
+            border-radius: 8px;
+            color: #0b3a12;
+        }
+
+        form {
+            margin: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        input[type="submit"],
+        button[type="button"] {
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .gps {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        input[readonly] {
+            background: #f3f4f6;
+            border: 1px solid var(--border);
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .error {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        @media (max-width:640px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Zadání šifry {{.Order}}</h1>
-    <p>{{.Assignment}}</p>
-    <hr>
-    {{if eq .Help 0}}
-    <p>Požádat o malou nápovědu.</p>
-    <form method="post">
-        <input type="hidden" name="help" value="1">
-        <input type="submit" value="Zobrazit nápovědu">
-    </form>
-    {{else if eq .Help 1}}
-    <p>Nápověda: {{.HelpText}}</p>
-    <p>Vzdát se a ukázat pozici další šifry.</p>
-    <form method="post">
-        <input type="hidden" name="help" value="2">
-        <input type="submit" value="Vzdát se">
-    </form>
-    {{else}}
-    <p>Řešení: {{.Solution}}</p>
-    {{end}}
-    <hr>
-    {{if ne .Help 2}}
-    {{if .Wrong}}<p style="color:red;">Špatné řešení, zkus to znovu.</p>{{end}}
-    <form method="post">
-        Řešení: <input type="text" name="solution"><br>
-        <input type="submit" value="Odeslat">
-    </form>
-    {{else}}
-    <p>
-        Souřadnice další šifry:
-        <input id="gps" value="{{.Coordinates}}" readonly />
-        <br>
-        <button onclick="copyToClipboard()">Zkopírovat do schránky</button>
-        <br>
-        Nápověda k nalezení pozice: {{.PositionHint}}
-    </p>
-    <p>Nápověda k nalezení cíle: {{.FinalClue}}</p>
-    {{end}}
-</body>
+    <div class="wrap">
+        <div class="card">
+            <h1>Zadání šifry {{.Order}}</h1>
+            <div class="meta">Aktuální úkol</div>
 
-<script>
-    function copyToClipboard() {
-        let copyText = document.querySelector("#gps");
-        copyText.select();
-        document.execCommand("copy");
-    }
-</script>
+            <div class="assignment">
+                {{.Assignment}}
+            </div>
+
+            <div class="controls">
+                {{if eq .Help 0}}
+                <div>
+                    <div class="muted">Požádat o malou nápovědu</div>
+                    <form method="post" style="margin-top:8px;">
+                        <input type="hidden" name="help" value="1">
+                        <input class="btn" type="submit" value="Zobrazit nápovědu">
+                    </form>
+                </div>
+                {{else if eq .Help 1}}
+                <div style="flex:1">
+                    <div class="helpbox">Nápověda: {{.HelpText}}</div>
+                    <div style="margin-top:12px">
+                        <div class="muted">Pokud se chcete vzdát a získat pozici další šifry:</div>
+                        <form method="post" style="margin-top:8px;">
+                            <input type="hidden" name="help" value="2">
+                            <input class="btn warn" type="submit" value="Vzdát se">
+                        </form>
+                    </div>
+                </div>
+                {{else}}
+                <div style="flex:1">
+                    <div class="solution">Řešení: {{.Solution}}</div>
+                </div>
+                {{end}}
+            </div>
+
+            <hr>
+
+            {{if ne .Help 2}}
+            {{if .Wrong}}<p class="error">Špatné řešení, zkus to znovu.</p>{{end}}
+            <form method="post" style="margin-top:12px;">
+                <label for="solution">Zadejte řešení</label>
+                <div class="row">
+                    <input id="solution" name="solution" type="text" autocomplete="off"
+                        placeholder="Zadejte odpověď...">
+                    <input class="btn ghost" type="submit" value="Odeslat">
+                </div>
+            </form>
+            {{else}}
+            <div>
+                <p class="muted">Souřadnice další šifry</p>
+                <div class="row">
+                    <div class="gps" style="flex:1">
+                        <input id="gps" value="{{.Coordinates}}" readonly>
+                        <button class="btn ghost" type="button" onclick="copyToClipboard()">Zkopírovat</button>
+                    </div>
+                </div>
+                <p class="muted" style="margin-top:8px">Nápověda k nalezení pozice: <strong>{{.PositionHint}}</strong>
+                </p>
+                <p class="muted">Nápověda k nalezení cíle: <strong>{{.FinalClue}}</strong></p>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const el = document.getElementById('gps');
+            if (!el) return;
+            const text = el.value || el.innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => { fallbackCopy(el); });
+            } else {
+                fallbackCopy(el);
+            }
+        }
+        function fallbackCopy(el) {
+            el.select ? el.select() : null;
+            try {
+                document.execCommand('copy');
+            } catch (e) { /* ignore */ }
+            window.getSelection ? window.getSelection().removeAllRanges() : null;
+        }
+    </script>
+</body>
 
 </html>
